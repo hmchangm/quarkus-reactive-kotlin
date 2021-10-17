@@ -5,16 +5,16 @@ import javax.ws.rs.core.Response
 sealed class KaqAppError {
     data class DatabaseProblem(val e :Throwable): KaqAppError()
     data class FileReadError(val e :Throwable): KaqAppError()
-    data class SomeError(val uuid: String): KaqAppError()
-    data class NoThisFruit(val fruitId: Long): KaqAppError()
+        data class NoThisFruit(val fruitId: Long): KaqAppError()
+    data class AddToDBError(val name: String) : KaqAppError()
 
     companion object {
         fun toResponse(kaqError: KaqAppError): Response = when (kaqError) {
             is FileReadError -> Response.serverError().entity(kaqError.e.stackTraceToString()).build()
-            is DatabaseProblem -> Response.serverError().entity("Db Connection Error ${kaqError.e.stackTraceToString()}")
+            is DatabaseProblem -> Response.serverError().entity("Db Connect Error ${kaqError.e.stackTraceToString()}")
                 .build()
-            is SomeError -> Response.serverError().entity("SomeError").build()
-            is NoThisFruit -> Response.serverError().entity("The fruitId ${kaqError.fruitId} is not exist").build()
+            is NoThisFruit -> Response.status(404).entity("FruitId ${kaqError.fruitId} is not exist").build()
+            is AddToDBError -> Response.serverError().entity("Fruit ${kaqError.name} add to db failed").build()
         }
     }
 }

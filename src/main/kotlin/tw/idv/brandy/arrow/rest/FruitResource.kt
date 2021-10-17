@@ -1,6 +1,6 @@
 package tw.idv.brandy.arrow.rest
 
-import arrow.core.Either
+
 import tw.idv.brandy.arrow.KaqAppError
 import tw.idv.brandy.arrow.bean.Fruit
 import tw.idv.brandy.arrow.bean.Greeting
@@ -25,8 +25,8 @@ class FruitResource {
     @Produces(MediaType.APPLICATION_JSON)
     suspend fun getAllFruits(): Response =
         FruitRepo.findAll().fold(
-            ifRight = { error -> Response.ok(error).build() },
-            ifLeft = { fruits -> KaqAppError.toResponse(fruits) }
+            ifRight = { fruits -> Response.ok(fruits).build() },
+            ifLeft = { err -> KaqAppError.toResponse(err) }
         )
 
     @GET
@@ -34,9 +34,16 @@ class FruitResource {
     @Produces(MediaType.APPLICATION_JSON)
     suspend fun getSingle(id:Long): Response =
         FruitRepo.findById(id).fold(
-            ifRight = { error -> Response.ok(error).build() },
-            ifLeft = { fruit -> KaqAppError.toResponse(fruit) }
+            ifRight = { fruit -> Response.ok(fruit).build() },
+            ifLeft = { err -> KaqAppError.toResponse(err) }
         )
 
+    @POST
+    @Path("/fruits")
+    suspend fun create(fruit:Fruit): Response =
+        FruitRepo.create(fruit).fold(
+            ifRight = {  Response.ok(it).status(201).build()},
+            ifLeft = { err -> KaqAppError.toResponse(err) }
+        )
 
 }
