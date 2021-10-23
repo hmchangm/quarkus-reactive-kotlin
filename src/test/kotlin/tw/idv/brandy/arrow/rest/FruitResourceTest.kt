@@ -3,11 +3,28 @@ package tw.idv.brandy.arrow.rest
 import io.quarkus.test.junit.QuarkusTest
 import io.restassured.RestAssured.given
 import org.hamcrest.CoreMatchers.containsString
+import org.junit.jupiter.api.AfterAll
+import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.Test
+import tw.idv.brandy.arrow.rest.testutil.PostgresResource
 
 
 @QuarkusTest
-class FruitResourceTest {
+
+ class FruitResourceTest {
+
+    val postgresDb: PostgresResource = PostgresResource()
+
+    @BeforeAll
+    fun setup() {
+        postgresDb.start()
+    }
+
+    @AfterAll
+    fun cleanUp() {
+        postgresDb.stop()
+    }
+
     @Test
     fun testListAllFruits() {
         //List all, should have all 4 fruits the database has initially:

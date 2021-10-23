@@ -19,13 +19,6 @@ class DbConn {
 
     fun onStart(@Observes ev: StartupEvent?) {
         dbPool = client
-        client.query("DROP TABLE IF EXISTS fruits").execute()
-            .flatMap { client.query("CREATE TABLE fruits (id SERIAL PRIMARY KEY, name TEXT NOT NULL)").execute() }
-            .flatMap { client.query("INSERT INTO fruits (name) VALUES ('Kiwi')").execute() }
-            .flatMap { client.query("INSERT INTO fruits (name) VALUES ('Durian')").execute() }
-            .flatMap { client.query("INSERT INTO fruits (name) VALUES ('Pomelo')").execute() }
-            .flatMap { client.query("INSERT INTO fruits (name) VALUES ('Lychee')").execute() }
-            .await().indefinitely()
     }
 
     fun onStop(@Observes ev: ShutdownEvent?) {
