@@ -35,7 +35,7 @@ class FruitRepo {
             return dbPool.getDatabase("fruit").getCollection("fruit")
         }
 
-        suspend fun create(fruit: Fruit) = add(fruit).flatMap { findByName(fruit.name) }
+
 
         suspend fun findByName(name: String): Either<KaqAppError, Fruit> = Either.catch {
             val document = BsonDocument().append("name", BsonString(name))
