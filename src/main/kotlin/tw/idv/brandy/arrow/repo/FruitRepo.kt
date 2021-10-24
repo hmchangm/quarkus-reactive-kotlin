@@ -1,12 +1,15 @@
 package tw.idv.brandy.arrow.repo
 
 import arrow.core.*
-import arrow.core.computations.either
+import io.quarkus.mongodb.reactive.ReactiveMongoCollection
+import io.smallrye.mutiny.Uni
 import io.smallrye.mutiny.coroutines.awaitSuspending
-import io.vertx.mutiny.sqlclient.Row
-import io.vertx.mutiny.sqlclient.Tuple
+import org.bson.BsonDocument
+import org.bson.BsonString
+import org.bson.Document
 import tw.idv.brandy.arrow.KaqAppError
 import tw.idv.brandy.arrow.bean.Fruit
+import tw.idv.brandy.arrow.repo.DbConn.Companion.dbPool
 
 
 class FruitRepo {
@@ -14,47 +17,41 @@ class FruitRepo {
 
     companion object {
 
-        private fun from(row: Row): Fruit {
-            return Fruit(row.getLong("id"), row.getString("name"))
+        suspend fun findAll(): Either<KaqAppError, List<Fruit>> = Either.catch {
+            getCollection().find()
+                .map(docToFruit).collect().asList().awaitSuspending()
+        }.mapLeft { KaqAppError.DatabaseProblem(it) }
+
+        suspend fun add(fruit: Fruit): Either<KaqAppError, Unit> = Either.catch {
+            val document = Document()
+                .append("name", fruit.name)
+                .append("desc", fruit.desc)
+                .append("id", fruit.id)
+            getCollection().insertOne(document).awaitSuspending()
+            Unit
+        }.mapLeft { KaqAppError.DatabaseProblem(it) }
+
+        private fun getCollection(): ReactiveMongoCollection<Document> {
+            return dbPool.getDatabase("fruit").getCollection("fruit")
         }
 
-        suspend fun findById(id: Long): Either<KaqAppError, Fruit> {
-            val row = DbConn.dbPool.preparedQuery("SELECT id, name FROM fruits WHERE id = $1")
-                .execute(Tuple.of(id))
-                .awaitSuspending().firstOrNone()
-            return when (row) {
-                is Some -> row.value.run(::from).right()
-                is None -> KaqAppError.NoThisFruit(id).left()
+        suspend fun create(fruit: Fruit) = add(fruit).flatMap { findByName(fruit.name) }
+
+        suspend fun findByName(name: String): Either<KaqAppError, Fruit> = Either.catch {
+            val document = BsonDocument().append("name", BsonString(name))
+            val fruit = getCollection().find(document)
+                .map(docToFruit).collect().first().awaitSuspending()
+            when (fruit.toOption()) {
+                is Some -> return@catch fruit
+                is None -> return KaqAppError.NoThisFruit(name).left()
             }
 
-        }
+        }.mapLeft { KaqAppError.DatabaseProblem(it) }
 
-        val findAll: suspend () -> Either<KaqAppError, List<Fruit>> = {
-            Either.catch {
-                DbConn.dbPool.query("SELECT id, name FROM fruits ORDER BY name ASC").execute()
-                    .awaitSuspending().toList().map { it.run(::from) }
-            }.mapLeft { KaqAppError.DatabaseProblem(it) }
-
+        private val docToFruit: (Document) -> Fruit = { doc: Document ->
+            val fruit = Fruit(doc.getString("id"), doc.getString("name"),doc.getString("desc"))
+            fruit
         }
-
-        private suspend fun add(name: String): Either<KaqAppError, Long> {
-            val row = DbConn.dbPool.preparedQuery("INSERT INTO fruits (name) VALUES ($1) RETURNING id")
-                .execute(Tuple.of(name))
-                .awaitSuspending().firstOrNone()
-            return when (row) {
-                is Some -> row.value.let { it.getLong("id") }.right()
-                is None -> KaqAppError.AddToDBError(name).left()
-            }
-        }
-        // https://arrow-kt.io/docs/patterns/error_handling/
-        suspend fun create(fruit: Fruit):Either<KaqAppError,Fruit> =
-        either {
-            val id = add(fruit.name).bind()
-            findById(id).bind()
-        }
-
-        suspend fun createFp(fruit: Fruit):Either<KaqAppError,Fruit> =
-            add(fruit.name).flatMap { findById(it) }
     }
 
 

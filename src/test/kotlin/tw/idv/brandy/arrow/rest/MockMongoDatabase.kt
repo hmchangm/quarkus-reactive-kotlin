@@ -6,7 +6,9 @@ import org.testcontainers.utility.DockerImageName
 
 class MockMongoDatabase : QuarkusTestResourceLifecycleManager {
 
-    private val mongoDBContainer = MongoDBContainer(DockerImageName.parse("mongo:4.0.10"))
+    private val mongoDBContainer = MongoDBContainer(DockerImageName.parse("mongo:4.0.10")).apply {
+
+    }
 
     override fun start(): MutableMap<String, String> {
         println("STARTING MONGO")

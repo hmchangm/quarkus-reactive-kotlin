@@ -1,8 +1,8 @@
 package tw.idv.brandy.arrow.repo
 
+import io.quarkus.mongodb.reactive.ReactiveMongoClient
 import io.quarkus.runtime.ShutdownEvent
 import io.quarkus.runtime.StartupEvent
-import io.vertx.mutiny.pgclient.PgPool
 import javax.enterprise.context.ApplicationScoped
 import javax.enterprise.event.Observes
 import javax.inject.Inject
@@ -11,17 +11,17 @@ import javax.inject.Inject
 class DbConn {
 
     @Inject
-    lateinit var client: PgPool
+    lateinit var client: ReactiveMongoClient
 
     companion object {
-        lateinit var dbPool: PgPool
+        lateinit var dbPool: ReactiveMongoClient
     }
 
-    fun onStart(@Observes ev: StartupEvent?) {
+    fun onStart(@Observes ev: StartupEvent) {
         dbPool = client
     }
 
-    fun onStop(@Observes ev: ShutdownEvent?) {
+    fun onStop(@Observes ev: ShutdownEvent) {
 
     }
 

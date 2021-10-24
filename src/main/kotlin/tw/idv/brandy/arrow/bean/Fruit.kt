@@ -1,10 +1,16 @@
 package tw.idv.brandy.arrow.bean
 
-import io.quarkus.runtime.annotations.RegisterForReflection
 
-@RegisterForReflection
+import java.util.*
+
+
 data class Fruit(
-    val id: Long,
-    val name: String
+    val id: String=UUID.randomUUID().toString(),
+    val name: String,
+    val desc: String
+)
 
+data class NewFruit(
+    val name: String,
+    val desc:String
 )

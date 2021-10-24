@@ -4,6 +4,7 @@ package tw.idv.brandy.arrow.rest
 import tw.idv.brandy.arrow.KaqAppError
 import tw.idv.brandy.arrow.bean.Fruit
 import tw.idv.brandy.arrow.bean.Greeting
+import tw.idv.brandy.arrow.bean.NewFruit
 import tw.idv.brandy.arrow.repo.FruitRepo
 import javax.ws.rs.GET
 import javax.ws.rs.POST
@@ -30,18 +31,19 @@ class FruitResource {
         )
 
     @GET
-    @Path("/fruits/{id}")
+    @Path("/fruits/name/{name}")
     @Produces(MediaType.APPLICATION_JSON)
-    suspend fun getSingle(id:Long): Response =
-        FruitRepo.findById(id).fold(
+    suspend fun getSingle(name:String): Response =
+        FruitRepo.findByName(name).fold(
             ifRight = { fruit -> Response.ok(fruit).build() },
             ifLeft = { err -> KaqAppError.toResponse(err) }
         )
 
     @POST
     @Path("/fruits")
-    suspend fun create(fruit:Fruit): Response =
-        FruitRepo.create(fruit).fold(
+    @Produces(MediaType.APPLICATION_JSON)
+    suspend fun create(fruit: NewFruit): Response =
+        FruitRepo.create(Fruit(name=fruit.name,desc = fruit.desc)).fold(
             ifRight = {  Response.ok(it).status(201).build()},
             ifLeft = { err -> KaqAppError.toResponse(err) }
         )
