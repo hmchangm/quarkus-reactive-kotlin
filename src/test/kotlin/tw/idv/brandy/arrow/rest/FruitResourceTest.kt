@@ -1,35 +1,31 @@
 package tw.idv.brandy.arrow.rest
 
+import io.quarkus.test.common.QuarkusTestResource
 import io.quarkus.test.junit.QuarkusTest
 import io.restassured.RestAssured.given
 import org.hamcrest.CoreMatchers.containsString
+import org.jboss.logging.Logger
 import org.junit.jupiter.api.AfterAll
 import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.Test
+import org.testcontainers.containers.PostgreSQLContainer
+import org.testcontainers.containers.wait.strategy.HostPortWaitStrategy
+import org.testcontainers.junit.jupiter.Container
 import tw.idv.brandy.arrow.rest.testutil.PostgresResource
+import java.util.*
 
+@QuarkusTestResource(MockPostDatabase::class)
 @QuarkusTest
 class FruitResourceTest {
 
     companion object {
-
-        val postgresDb: PostgresResource = PostgresResource()
-
-        @BeforeAll
-        fun setup() {
-            postgresDb.start()
-        }
-
-        @AfterAll
-        fun cleanUp() {
-            postgresDb.stop()
-        }
+        private val LOG: Logger = Logger.getLogger(FruitResourceTest::class.java)
     }
 
     @Test
     fun testListAllFruits() {
         // List all, should have all 4 fruits the database has initially:
-        given().`when`()
+       val resp =  given().`when`()
                 .get("/fruits")
                 .then()
                 .statusCode(200)
