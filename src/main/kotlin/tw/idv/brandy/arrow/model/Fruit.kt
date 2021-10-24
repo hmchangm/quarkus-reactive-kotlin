@@ -1,4 +1,4 @@
-package tw.idv.brandy.arrow.bean
+package tw.idv.brandy.arrow.model
 
 
 import java.util.*
@@ -8,9 +8,4 @@ data class Fruit(
     val id: String=UUID.randomUUID().toString(),
     val name: String,
     val desc: String
-)
-
-data class NewFruit(
-    val name: String,
-    val desc:String
 )

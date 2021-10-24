@@ -1,4 +1,4 @@
-package tw.idv.brandy.arrow.repo
+package tw.idv.brandy.arrow.util
 
 import io.quarkus.mongodb.reactive.ReactiveMongoClient
 import io.quarkus.runtime.ShutdownEvent

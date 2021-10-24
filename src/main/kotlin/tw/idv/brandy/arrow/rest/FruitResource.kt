@@ -1,11 +1,11 @@
 package tw.idv.brandy.arrow.rest
 
 
+import tw.idv.brandy.arrow.FruitService
 import tw.idv.brandy.arrow.KaqAppError
-import tw.idv.brandy.arrow.bean.Fruit
-import tw.idv.brandy.arrow.bean.Greeting
-import tw.idv.brandy.arrow.bean.NewFruit
-import tw.idv.brandy.arrow.repo.FruitRepo
+import tw.idv.brandy.arrow.model.Fruit
+import tw.idv.brandy.arrow.model.Greeting
+import tw.idv.brandy.arrow.model.NewFruit
 import javax.ws.rs.GET
 import javax.ws.rs.POST
 import javax.ws.rs.Path
@@ -25,7 +25,7 @@ class FruitResource {
     @Path("/fruits")
     @Produces(MediaType.APPLICATION_JSON)
     suspend fun getAllFruits(): Response =
-        FruitRepo.findAll().fold(
+        FruitService.findAll().fold(
             ifRight = { fruits -> Response.ok(fruits).build() },
             ifLeft = { err -> KaqAppError.toResponse(err) }
         )
@@ -34,7 +34,7 @@ class FruitResource {
     @Path("/fruits/name/{name}")
     @Produces(MediaType.APPLICATION_JSON)
     suspend fun getSingle(name:String): Response =
-        FruitRepo.findByName(name).fold(
+        FruitService.findByName(name).fold(
             ifRight = { fruit -> Response.ok(fruit).build() },
             ifLeft = { err -> KaqAppError.toResponse(err) }
         )
@@ -43,7 +43,7 @@ class FruitResource {
     @Path("/fruits")
     @Produces(MediaType.APPLICATION_JSON)
     suspend fun create(fruit: NewFruit): Response =
-        FruitRepo.create(Fruit(name=fruit.name,desc = fruit.desc)).fold(
+        FruitService.create(Fruit(name=fruit.name,desc = fruit.desc)).fold(
             ifRight = {  Response.ok(it).status(201).build()},
             ifLeft = { err -> KaqAppError.toResponse(err) }
         )

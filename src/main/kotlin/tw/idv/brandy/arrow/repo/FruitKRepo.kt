@@ -6,26 +6,24 @@ import io.smallrye.mutiny.coroutines.awaitSuspending
 import org.bson.BsonDocument
 import org.bson.BsonString
 import org.bson.Document
+import org.litote.kmongo.eq
 import tw.idv.brandy.arrow.KaqAppError
 import tw.idv.brandy.arrow.model.Fruit
 import tw.idv.brandy.arrow.util.DbConn.Companion.dbPool
+import tw.idv.brandy.arrow.util.KmongoResource
 
 
-class FruitRepo {
+class FruitKRepo {
 
     companion object {
 
+        private val fruitCollection = KmongoResource.fruitStore.getCollection<Fruit>()
         suspend fun findAll(): Either<KaqAppError, List<Fruit>> = Either.catch {
-            getCollection().find()
-                .map(docToFruit).collect().asList().awaitSuspending()
+            fruitCollection.find().toList()
         }.mapLeft { KaqAppError.DatabaseProblem(it) }
 
         suspend fun add(fruit: Fruit): Either<KaqAppError, Unit> = Either.catch {
-            val document = Document()
-                .append("name", fruit.name)
-                .append("desc", fruit.desc)
-                .append("id", fruit.id)
-            getCollection().insertOne(document).awaitSuspending()
+            fruitCollection.insertOne(fruit)
             Unit
         }.mapLeft { KaqAppError.DatabaseProblem(it) }
 
@@ -34,22 +32,15 @@ class FruitRepo {
         }
 
 
-
         suspend fun findByName(name: String): Either<KaqAppError, Fruit> = Either.catch {
-            val document = BsonDocument().append("name", BsonString(name))
-            val fruit = getCollection().find(document)
-                .map(docToFruit).collect().first().awaitSuspending()
+            val fruit : Fruit? = fruitCollection.findOne(Fruit::name eq "Yoda")
             when (fruit.toOption()) {
-                is Some -> return@catch fruit
+                is Some -> return@catch fruit!!
                 is None -> return KaqAppError.NoThisFruit(name).left()
             }
 
         }.mapLeft { KaqAppError.DatabaseProblem(it) }
 
-        private val docToFruit: (Document) -> Fruit = { doc: Document ->
-            val fruit = Fruit(doc.getString("id"), doc.getString("name"),doc.getString("desc"))
-            fruit
-        }
     }
 
 
