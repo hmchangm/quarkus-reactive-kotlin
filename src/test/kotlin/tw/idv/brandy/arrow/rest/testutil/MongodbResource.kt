@@ -18,10 +18,10 @@ class PostgresResource : QuarkusTestResourceLifecycleManager {
 
     companion object {
         val db = PostgreSQLContainer<Nothing>(DockerImageName.parse("postgres:13-alpine")).apply {
-            withDatabaseName("db")
-            withUsername("user")
-            withPassword("password")
-            withInitScript("sql/init.sql")
+            withDatabaseName("quarkus_test")
+            withUsername("quarkus_test")
+            withPassword("quarkus_test")
+            withInitScript("init.sql")
         }
     }
 }

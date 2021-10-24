@@ -8,62 +8,47 @@ import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.Test
 import tw.idv.brandy.arrow.rest.testutil.PostgresResource
 
-
 @QuarkusTest
+class FruitResourceTest {
 
- class FruitResourceTest {
+    companion object {
 
-    val postgresDb: PostgresResource = PostgresResource()
+        val postgresDb: PostgresResource = PostgresResource()
 
-    @BeforeAll
-    fun setup() {
-        postgresDb.start()
-    }
+        @BeforeAll
+        fun setup() {
+            postgresDb.start()
+        }
 
-    @AfterAll
-    fun cleanUp() {
-        postgresDb.stop()
+        @AfterAll
+        fun cleanUp() {
+            postgresDb.stop()
+        }
     }
 
     @Test
     fun testListAllFruits() {
-        //List all, should have all 4 fruits the database has initially:
-        given()
-            .`when`().get("/fruits")
-            .then()
-            .statusCode(200)
-            .body(
-                containsString("Kiwi"),
-                containsString("Durian"),
-                containsString("Pomelo"),
-                containsString("Lychee")
-            )
-        given()
-            .`when`().get("/fruits/1")
-            .then()
-            .statusCode(200)
-            .body(
-                containsString("Kiwi")
-            )
+        // List all, should have all 4 fruits the database has initially:
+        given().`when`()
+                .get("/fruits")
+                .then()
+                .statusCode(200)
+                .body(
+                        containsString("Kiwi"),
+                        containsString("Durian"),
+                        containsString("Pomelo"),
+                        containsString("Lychee")
+                )
+        given().`when`().get("/fruits/1").then().statusCode(200).body(containsString("Kiwi"))
 
-        given()
-            .`when`().get("/fruits/6")
-            .then()
-            .statusCode(404)
+        given().`when`().get("/fruits/6").then().statusCode(404)
 
-        given()
-            .`when`()
-            .body("""{"name" : "Pear"}""")
-            .contentType("application/json")
-            .post("/fruits")
-            .then()
-            .statusCode(201)
-            .body(
-                containsString(""""id":"""),
-                containsString(""""name":"Pear"""")
-            )
+        given().`when`()
+                .body("""{"name" : "Pear"}""")
+                .contentType("application/json")
+                .post("/fruits")
+                .then()
+                .statusCode(201)
+                .body(containsString(""""id":"""), containsString(""""name":"Pear""""))
     }
-
-
-
 }
