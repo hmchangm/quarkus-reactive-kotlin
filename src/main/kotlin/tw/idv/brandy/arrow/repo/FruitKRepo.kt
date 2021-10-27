@@ -27,13 +27,9 @@ class FruitKRepo {
             Unit
         }.mapLeft { KaqAppError.DatabaseProblem(it) }
 
-        private fun getCollection(): ReactiveMongoCollection<Document> {
-            return dbPool.getDatabase("fruit").getCollection("fruit")
-        }
-
 
         suspend fun findByName(name: String): Either<KaqAppError, Fruit> = Either.catch {
-            val fruit : Fruit? = fruitCollection.findOne(Fruit::name eq "Yoda")
+            val fruit : Fruit? = fruitCollection.findOne(Fruit::name eq name)
             when (fruit.toOption()) {
                 is Some -> return@catch fruit!!
                 is None -> return KaqAppError.NoThisFruit(name).left()

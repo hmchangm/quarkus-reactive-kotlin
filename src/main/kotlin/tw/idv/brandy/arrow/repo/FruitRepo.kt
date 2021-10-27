@@ -47,7 +47,7 @@ class FruitRepo {
         }.mapLeft { KaqAppError.DatabaseProblem(it) }
 
         private val docToFruit: (Document) -> Fruit = { doc: Document ->
-            val fruit = Fruit(doc.getString("id"), doc.getString("name"),doc.getString("desc"))
+            val fruit = Fruit(doc.getString("id"), doc.getString("name"),doc.getOrDefault("desc","") as String)
             fruit
         }
     }

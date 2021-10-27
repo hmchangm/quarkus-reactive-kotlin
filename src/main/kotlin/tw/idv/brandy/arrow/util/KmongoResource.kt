@@ -18,7 +18,7 @@ class KmongoResource {
         }
 
         val client = KMongo.createClient(mongoDbString).coroutine
-        val fruitStore = client.getDatabase("fruits")
+        val fruitStore = client.getDatabase("fruit")
     }
 
 }
