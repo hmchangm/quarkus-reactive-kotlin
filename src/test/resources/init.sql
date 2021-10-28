@@ -1,4 +1,4 @@
-DROP TABLE IF EXISTS fruits;
+USE quarkus_test;
 CREATE TABLE fruits (id SERIAL PRIMARY KEY, name TEXT NOT NULL);
 INSERT INTO fruits (name) VALUES ('Kiwi');
 INSERT INTO fruits (name) VALUES ('Durian');

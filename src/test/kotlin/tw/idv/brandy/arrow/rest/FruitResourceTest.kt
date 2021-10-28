@@ -7,7 +7,7 @@ import org.hamcrest.CoreMatchers.containsString
 import org.jboss.logging.Logger
 import org.junit.jupiter.api.Test
 
-@QuarkusTestResource(MockPostDatabase::class)
+@QuarkusTestResource(MockDatabase::class)
 @QuarkusTest
 class FruitResourceTest {
 
