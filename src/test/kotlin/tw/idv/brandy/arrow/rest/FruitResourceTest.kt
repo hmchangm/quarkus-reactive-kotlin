@@ -5,14 +5,7 @@ import io.quarkus.test.junit.QuarkusTest
 import io.restassured.RestAssured.given
 import org.hamcrest.CoreMatchers.containsString
 import org.jboss.logging.Logger
-import org.junit.jupiter.api.AfterAll
-import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.Test
-import org.testcontainers.containers.PostgreSQLContainer
-import org.testcontainers.containers.wait.strategy.HostPortWaitStrategy
-import org.testcontainers.junit.jupiter.Container
-import tw.idv.brandy.arrow.rest.testutil.PostgresResource
-import java.util.*
 
 @QuarkusTestResource(MockPostDatabase::class)
 @QuarkusTest
