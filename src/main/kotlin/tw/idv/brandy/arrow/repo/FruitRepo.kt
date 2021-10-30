@@ -15,10 +15,12 @@ class FruitRepo {
 
     companion object {
 
-        suspend fun findAll(): Either<KaqAppError, List<Fruit>> = Either.catch {
-            getCollection().find()
-                .map(docToFruit).collect().asList().awaitSuspending()
-        }.mapLeft { KaqAppError.DatabaseProblem(it) }
+        val findAll :suspend () -> Either<KaqAppError, List<Fruit>> = {
+            Either.catch {
+                getCollection().find()
+                    .map(docToFruit).collect().asList().awaitSuspending()
+            }.mapLeft { KaqAppError.DatabaseProblem(it) }
+        }
 
         suspend fun add(fruit: Fruit): Either<KaqAppError, Unit> = Either.catch {
             val document = Document()

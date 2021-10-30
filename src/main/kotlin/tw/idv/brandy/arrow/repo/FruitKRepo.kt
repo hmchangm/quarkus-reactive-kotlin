@@ -18,9 +18,11 @@ class FruitKRepo {
     companion object {
 
         private val fruitCollection = KmongoResource.fruitStore.getCollection<Fruit>()
-        suspend fun findAll(): Either<KaqAppError, List<Fruit>> = Either.catch {
-            fruitCollection.find().toList()
-        }.mapLeft { KaqAppError.DatabaseProblem(it) }
+        val findAll: suspend () -> Either<KaqAppError, List<Fruit>> = {
+            Either.catch {
+                fruitCollection.find().toList()
+            }.mapLeft { KaqAppError.DatabaseProblem(it) }
+        }
 
         suspend fun add(fruit: Fruit): Either<KaqAppError, Unit> = Either.catch {
             fruitCollection.insertOne(fruit)
