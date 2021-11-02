@@ -7,7 +7,7 @@ import io.vertx.mutiny.mysqlclient.MySQLClient
 import io.vertx.mutiny.sqlclient.Row
 import io.vertx.mutiny.sqlclient.Tuple
 import tw.idv.brandy.arrow.KaqAppError
-import tw.idv.brandy.arrow.bean.Fruit
+import tw.idv.brandy.arrow.model.Fruit
 import tw.idv.brandy.arrow.repo.DbConn.Companion.dbPool
 
 

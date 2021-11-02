@@ -2,8 +2,8 @@ package tw.idv.brandy.arrow.rest
 
 
 import tw.idv.brandy.arrow.KaqAppError
-import tw.idv.brandy.arrow.bean.Fruit
-import tw.idv.brandy.arrow.bean.Greeting
+import tw.idv.brandy.arrow.model.Fruit
+import tw.idv.brandy.arrow.model.Greeting
 import tw.idv.brandy.arrow.repo.FruitRepo
 import javax.ws.rs.GET
 import javax.ws.rs.POST

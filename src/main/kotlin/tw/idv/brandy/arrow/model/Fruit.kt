@@ -1,4 +1,4 @@
-package tw.idv.brandy.arrow.bean
+package tw.idv.brandy.arrow.model
 
 import io.quarkus.runtime.annotations.RegisterForReflection
 
