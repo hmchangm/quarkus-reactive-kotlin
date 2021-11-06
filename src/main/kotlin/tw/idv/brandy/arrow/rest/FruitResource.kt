@@ -1,51 +1,25 @@
 package tw.idv.brandy.arrow.rest
 
-import tw.idv.brandy.arrow.FruitService
 import tw.idv.brandy.arrow.KaqAppError
 import tw.idv.brandy.arrow.model.Fruit
 import tw.idv.brandy.arrow.model.Greeting
 import tw.idv.brandy.arrow.model.NewFruit
-import java.util.concurrent.ThreadLocalRandom
+import tw.idv.brandy.arrow.service.FruitService
 import javax.ws.rs.GET
 import javax.ws.rs.POST
 import javax.ws.rs.Path
 import javax.ws.rs.Produces
 import javax.ws.rs.core.MediaType
 import javax.ws.rs.core.Response
-import kotlin.streams.asSequence
 
 
 @Path("/")
 class FruitResource {
 
-    private val charPool : List<Char> = ('a'..'z') + ('A'..'Z') + ('0'..'9')
-    fun randomString(length:Long):String  {
-        return ThreadLocalRandom.current()
-        .ints(length, 0, charPool.size)
-        .asSequence()
-        .map(charPool::get)
-        .joinToString("")
-    }
-
     @GET
     @Path("/greeting")
     @Produces(MediaType.APPLICATION_JSON)
     suspend fun hello() = Greeting("hello")
-
-    @GET
-    @Path("/createFruits")
-    suspend fun createFruits(): String = run {
-        for (i in 0..50000) {
-            FruitService.create(Fruit(name=randomString(100),desc = randomString(400))).fold(
-                ifRight = {  Response.ok(it).status(201).build()},
-                ifLeft = { err -> KaqAppError.toResponse(err) }
-            )
-
-        }
-
-    }.let{"done"}
-
-
 
 
     @GET
@@ -58,10 +32,10 @@ class FruitResource {
         )
 
     @GET
-    @Path("/fruitq")
+    @Path("/fruitsReact")
     @Produces(MediaType.APPLICATION_JSON)
-    suspend fun getAllFruitq(): Response =
-        FruitService.findAllQ().fold(
+    suspend fun getAllFruitsReact(): Response =
+        FruitService.findReactAll().fold(
             ifRight = { fruits -> Response.ok(fruits).build() },
             ifLeft = { err -> KaqAppError.toResponse(err) }
         )

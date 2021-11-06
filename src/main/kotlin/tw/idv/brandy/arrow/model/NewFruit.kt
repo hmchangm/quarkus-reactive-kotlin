@@ -1,9 +1,12 @@
 package tw.idv.brandy.arrow.model
 
-import kotlinx.serialization.Serializable
+import com.fasterxml.jackson.annotation.JsonProperty
+import io.quarkus.runtime.annotations.RegisterForReflection
 
-@Serializable
+@RegisterForReflection
 data class NewFruit(
+    @JsonProperty
     val name: String,
+    @JsonProperty
     val desc:String
 )
