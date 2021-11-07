@@ -11,7 +11,7 @@ class GreetingResourceTest {
     @Test
     fun testHelloEndpoint() {
         Given {
-            log().method()
+            log().body()
         } When {
             get("/greeting")
         } Then {
