@@ -8,21 +8,22 @@ import tw.idv.brandy.arrow.repo.FruitRepo
 
 typealias KaqAppErrorFruitListEither = Either<KaqAppError, List<Fruit>>
 
-class FruitService {
-    companion object {
+object FruitService {
 
-        private suspend fun findAllWithTimePrint(finder: suspend () -> KaqAppErrorFruitListEither,method:String): KaqAppErrorFruitListEither =
-            Either.catch {
-                val start = System.currentTimeMillis()
-                val all = finder()
-                val done = System.currentTimeMillis()
-                println("$method Load time : ${done - start}")
-                return all
-            }.mapLeft { KaqAppError.DatabaseProblem(it) }
+    private suspend fun findAllWithTimePrint(
+        finder: suspend () -> KaqAppErrorFruitListEither,
+        method: String
+    ): KaqAppErrorFruitListEither =
+        Either.catch {
+            val start = System.currentTimeMillis()
+            val all = finder()
+            val done = System.currentTimeMillis()
+            println("$method Load time : ${done - start}")
+            return all
+        }.mapLeft { KaqAppError.DatabaseProblem(it) }
 
-        suspend fun findAll(): KaqAppErrorFruitListEither = findAllWithTimePrint(FruitRepo.findAll,"Coroutines")
-        suspend fun findReactAll(): KaqAppErrorFruitListEither = findAllWithTimePrint(FruitRepo.findReactAll,"Reactive")
-        suspend fun create(fruit: Fruit) = FruitRepo.add(fruit).flatMap { FruitRepo.findByName(fruit.name) }
-        suspend fun findByName(name: String): Either<KaqAppError, Fruit> = FruitRepo.findByName(name)
-    }
+    suspend fun findAll(): KaqAppErrorFruitListEither = findAllWithTimePrint(FruitRepo.findAll, "Coroutines")
+    suspend fun create(fruit: Fruit) = FruitRepo.add(fruit).flatMap { FruitRepo.findByName(fruit.name) }
+    suspend fun findByName(name: String): Either<KaqAppError, Fruit> = FruitRepo.findByName(name)
+
 }

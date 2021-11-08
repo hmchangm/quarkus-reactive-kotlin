@@ -17,7 +17,7 @@ class FruitResourceTest {
     }
 
     @Test
-    fun testListAllFruits() {
+    fun `test list all fruits`() {
         Given {
             body("""{"name" : "Kiwi","desc":"New Zealand fruit"}""")
             contentType("application/json")
@@ -28,7 +28,7 @@ class FruitResourceTest {
             body(containsString(""""id":"""), containsString(""""name":"Kiwi""""))
         }
 
-        Given {
+        val uid: String = Given {
             body("""{"name" : "Durian","desc":"Malaysia fruit"}""")
                 .contentType("application/json")
         } When {
@@ -36,7 +36,21 @@ class FruitResourceTest {
         } Then {
             statusCode(201)
             body(containsString(""""id":"""), containsString(""""name":"Durian""""))
+        } Extract {
+            path("id")
         }
+
+        println("get uid : $uid")
+
+        Given {
+            log().method()
+        } When {
+            get("/fruits/name/Durian")
+        } Then {
+            statusCode(200)
+            body(containsString(uid), containsString(""""name":"Durian""""))
+        }
+
         Given {
             log().method()
         } When {

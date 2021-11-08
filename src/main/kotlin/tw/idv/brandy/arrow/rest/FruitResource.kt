@@ -32,15 +32,6 @@ class FruitResource {
         )
 
     @GET
-    @Path("/fruitsReact")
-    @Produces(MediaType.APPLICATION_JSON)
-    suspend fun getAllFruitsReact(): Response =
-        FruitService.findReactAll().fold(
-            ifRight = { fruits -> Response.ok(fruits).build() },
-            ifLeft = { err -> KaqAppError.toResponse(err) }
-        )
-
-    @GET
     @Path("/fruits/name/{name}")
     @Produces(MediaType.APPLICATION_JSON)
     suspend fun getSingle(name:String): Response =
