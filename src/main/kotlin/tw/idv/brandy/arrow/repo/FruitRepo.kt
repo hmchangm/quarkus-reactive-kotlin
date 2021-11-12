@@ -10,7 +10,7 @@ import org.bson.BsonString
 import org.bson.Document
 import tw.idv.brandy.arrow.KaqAppError
 import tw.idv.brandy.arrow.model.Fruit
-import tw.idv.brandy.arrow.util.DatabaseInit.mongoClient
+import tw.idv.brandy.arrow.util.DatabaseInit.Companion.mongoClient
 
 
 object FruitRepo {

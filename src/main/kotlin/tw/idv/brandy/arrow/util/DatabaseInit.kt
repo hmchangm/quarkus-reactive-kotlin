@@ -1,9 +1,21 @@
 package tw.idv.brandy.arrow.util
 
 import com.mongodb.client.MongoClient
-import javax.enterprise.inject.spi.CDI
+import io.quarkus.runtime.StartupEvent
+import javax.enterprise.context.ApplicationScoped
+import javax.enterprise.event.Observes
 
-object DatabaseInit {
-    val mongoClient: MongoClient by lazy { CDI.current().select(MongoClient::class.java).get() }
+
+@ApplicationScoped
+class DatabaseInit(val quarkusMongo: MongoClient) {
+
+    companion object {
+        lateinit var mongoClient: MongoClient
+    }
+
+    fun startup(@Observes event: StartupEvent) {
+        mongoClient = quarkusMongo
+    }
+
 
 }

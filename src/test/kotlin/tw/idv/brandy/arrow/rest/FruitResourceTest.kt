@@ -2,8 +2,10 @@ package tw.idv.brandy.arrow.rest
 
 import io.quarkus.test.common.QuarkusTestResource
 import io.quarkus.test.junit.QuarkusTest
-import io.restassured.RestAssured.given
-import io.restassured.module.kotlin.extensions.*
+import io.restassured.module.kotlin.extensions.Extract
+import io.restassured.module.kotlin.extensions.Given
+import io.restassured.module.kotlin.extensions.Then
+import io.restassured.module.kotlin.extensions.When
 import org.hamcrest.CoreMatchers.containsString
 import org.jboss.logging.Logger
 import org.junit.jupiter.api.Test
@@ -29,7 +31,10 @@ class FruitResourceTest {
         }
 
         val uid: String = Given {
-            body("""{"name" : "Durian","desc":"Malaysia fruit"}""")
+            body("""
+                {"name" : "Durian",
+                "desc":"Malaysia fruit"}
+                """.trimIndent())
                 .contentType("application/json")
         } When {
             post("/fruits")
@@ -64,14 +69,6 @@ class FruitResourceTest {
             )
         }
 
-        given().`when`()
-            .get("/fruitsReact")
-            .then()
-            .statusCode(200)
-            .body(
-                containsString("Kiwi"),
-                containsString("Durian")
-            )
 
 
     }
