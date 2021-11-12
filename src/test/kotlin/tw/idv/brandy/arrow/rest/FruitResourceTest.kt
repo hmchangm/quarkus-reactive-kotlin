@@ -19,7 +19,7 @@ class FruitResourceTest {
     }
 
     @Test
-    fun `test list all fruits`() {
+    fun `test add fruits`() {
         Given {
             body("""{"name" : "Kiwi","desc":"New Zealand fruit"}""")
             contentType("application/json")
@@ -27,14 +27,19 @@ class FruitResourceTest {
             post("/fruits")
         } Then {
             statusCode(201)
-            body(containsString(""""id":"""), containsString(""""name":"Kiwi""""))
+            body(
+                containsString(""""id":"""),
+                containsString(""""name":"Kiwi"""")
+            )
         }
 
         val uid: String = Given {
-            body("""
+            body(
+                """
                 {"name" : "Durian",
                 "desc":"Malaysia fruit"}
-                """.trimIndent())
+                """.trimIndent()
+            )
                 .contentType("application/json")
         } When {
             post("/fruits")
@@ -68,7 +73,6 @@ class FruitResourceTest {
                 containsString("Durian")
             )
         }
-
 
 
     }

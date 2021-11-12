@@ -35,13 +35,18 @@ object FruitRepo {
         return mongoClient.getDatabase("fruit").getCollection("fruit")
     }
 
-    private val fruitOptionToEither: suspend (maybeFruit: Option<Fruit>, name: String) -> Either<KaqAppError, Fruit> =
-        { maybeFruit, name -> maybeFruit.toEither { KaqAppError.NoThisFruit(name) } }
+    val findByName: suspend (name: String) -> Either<KaqAppError, Fruit> = { name ->
+        findOptionFruitByName(name).flatMap { getFruitOrLeft(name, it) }
+    }
 
-    suspend fun findByName(name: String): Either<KaqAppError, Fruit> = Either.catch {
+    private fun findOptionFruitByName(name: String): Either<KaqAppError, Option<Fruit>> = Either.catch {
         BsonDocument().append("name", BsonString(name)).let { getCollection().find(it) }
             .firstNotNullOfOrNull(docToFruit).toOption()
-    }.mapLeft { KaqAppError.DatabaseProblem(it) }.flatMap { fruitOptionToEither(it, name) }
+    }.mapLeft { KaqAppError.DatabaseProblem(it) }
+
+    private fun getFruitOrLeft(name: String, maybeFruit: Option<Fruit>): Either<KaqAppError, Fruit> =
+        maybeFruit.toEither { KaqAppError.NoThisFruit(name) }
+
 
     private val docToFruit: (Document) -> Fruit = { doc: Document ->
         Fruit(doc.getString("id"), doc.getString("name"), doc.getOrDefault("desc", "") as String)

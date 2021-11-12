@@ -19,7 +19,7 @@ class FruitResource {
     @GET
     @Path("/greeting")
     @Produces(MediaType.APPLICATION_JSON)
-    suspend fun hello() = Greeting("hello")
+    suspend fun hello() = Greeting("hello","name")
 
 
     @GET
@@ -30,6 +30,12 @@ class FruitResource {
             ifRight = { fruits -> Response.ok(fruits).build() },
             ifLeft = { err -> KaqAppError.toResponse(err) }
         )
+
+    @GET
+    @Path("/fruits")
+    @Produces(MediaType.APPLICATION_JSON)
+    suspend fun getAll() = FruitService.findAll()
+
 
     @GET
     @Path("/fruits/name/{name}")
