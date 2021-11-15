@@ -1,15 +1,11 @@
 package tw.idv.brandy.arrow.rest
 
 import arrow.core.Either
-import arrow.core.right
-import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 import tw.idv.brandy.arrow.KaqAppError
 import tw.idv.brandy.arrow.model.*
-import tw.idv.brandy.arrow.repo.FruitRepo
-import tw.idv.brandy.arrow.service.FruitService
 import javax.ws.rs.GET
 import javax.ws.rs.POST
 import javax.ws.rs.Path
@@ -22,7 +18,7 @@ import javax.ws.rs.core.Response
 class GreetingRest {
 
     @GET
-    @Path("/jackson")
+    @Path("/")
     @Produces(MediaType.APPLICATION_JSON)
     suspend fun hello(): Greeting = Greeting("hello")
 
