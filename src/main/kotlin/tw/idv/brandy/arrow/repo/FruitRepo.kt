@@ -9,8 +9,8 @@ import org.bson.BsonDocument
 import org.bson.BsonString
 import org.bson.Document
 import tw.idv.brandy.arrow.KaqAppError
-import tw.idv.brandy.arrow.model.Fruit
-import tw.idv.brandy.arrow.util.DatabaseInit.mongoClient
+import tw.idv.brandy.arrow.model.*
+import tw.idv.brandy.arrow.util.DatabaseInit.Companion.mongoClient
 
 
 object FruitRepo {
@@ -18,6 +18,12 @@ object FruitRepo {
     val findAll: suspend () -> Either<KaqAppError, List<Fruit>> = {
         Either.catch {
             getCollection().find().map(docToFruit).toList()
+        }.mapLeft { KaqAppError.DatabaseProblem(it) }
+    }
+
+    val findFruitModels: suspend () -> Either<KaqAppError, List<FruitModel>> = {
+        Either.catch {
+            getCollection().find().map(docToValueFruit).toList()
         }.mapLeft { KaqAppError.DatabaseProblem(it) }
     }
 
@@ -47,5 +53,12 @@ object FruitRepo {
         Fruit(doc.getString("id"), doc.getString("name"), doc.getOrDefault("desc", "") as String)
     }
 
+    private val docToValueFruit: (Document) -> FruitModel = { doc: Document ->
+        FruitModel(
+            FruitId(doc.getString("id")),
+            FruitName(doc.getString("name")),
+            FruitDesc(doc.getOrDefault("desc", "") as String)
+        )
+    }
 
 }
