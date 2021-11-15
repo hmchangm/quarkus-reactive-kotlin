@@ -29,10 +29,9 @@ class GreetingRest {
 
 
     @POST
-    suspend fun greetInOut(s: String): Response {
+    suspend fun greetInOut(json: String): Response {
         return Either.catch {
-            val g: Greetv = Json.decodeFromString(s)
-            g
+            json.let { Json.decodeFromString(Greetv.serializer(), it) }
         }.mapLeft { KaqAppError.DatabaseProblem(it) }
             .fold(ifRight = {
                 Response.ok(Json.encodeToString(it), MediaType.APPLICATION_JSON).build()
