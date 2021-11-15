@@ -29,10 +29,11 @@ object FruitRepo {
 
     val add: suspend (fruit: Fruit) -> Either<KaqAppError, Unit> = { fruit ->
         Either.catch {
-            Document()
-                .append("name", fruit.name)
-                .append("desc", fruit.desc)
-                .append("id", fruit.id).let { getCollection().insertOne(it) }
+            Document().apply {
+                append("name", fruit.name)
+                append("desc", fruit.desc)
+                append("id", fruit.id)
+            }.let { getCollection().insertOne(it) }
             Unit
         }.mapLeft { KaqAppError.DatabaseProblem(it) }
     }

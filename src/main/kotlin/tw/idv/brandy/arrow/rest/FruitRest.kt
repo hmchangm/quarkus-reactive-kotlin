@@ -17,30 +17,6 @@ import javax.ws.rs.core.Response
 @Path("/fruits")
 class FruitRest {
 
-    @GET
-    @Path("/all")
-    suspend fun getAll(): Response {
-        return FruitRepo.findFruitModels().fold(
-            ifRight = {
-                Response.ok(
-                    Json.encodeToString(it), MediaType.APPLICATION_JSON
-                ).build()
-            },
-            ifLeft = { err -> KaqAppError.toResponse(err) })
-    }
-
-    @GET
-    @Path("/alls")
-    suspend fun getAlls(): Response {
-        return FruitRepo.findFruitModels().fold(
-            ifRight = {
-                Response.ok(
-                    it, MediaType.APPLICATION_JSON
-                ).build()
-            },
-            ifLeft = { err -> KaqAppError.toResponse(err) })
-    }
-
 
     @GET
     @Produces(MediaType.APPLICATION_JSON)
@@ -60,7 +36,6 @@ class FruitRest {
         )
 
     @POST
-
     @Produces(MediaType.APPLICATION_JSON)
     suspend fun create(fruit: NewFruit): Response =
         FruitService.create(Fruit(name = fruit.name, desc = fruit.desc)).fold(
