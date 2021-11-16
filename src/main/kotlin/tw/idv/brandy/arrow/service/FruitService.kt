@@ -38,4 +38,10 @@ object FruitService {
         parZip({ create(fruit) }, { findByName(name) }, { findAll() }) { _, nameFruit, fruits ->
             nameFruit.map { it.name }
         }
+
+    suspend fun createAndFindZip(fruit: Fruit, name: String): Either<KaqAppError, String> =
+        create(fruit).zip(findByName(name), findAll()) { newOne, nameFruit, _ ->
+            nameFruit.name
+        }
+
 }
