@@ -1,7 +1,8 @@
 package tw.idv.brandy.arrow.service
 
-import arrow.core.Either
-import arrow.core.flatMap
+import arrow.core.*
+import arrow.core.computations.either
+import arrow.fx.coroutines.parZip
 import tw.idv.brandy.arrow.KaqAppError
 import tw.idv.brandy.arrow.model.Fruit
 import tw.idv.brandy.arrow.repo.FruitRepo
@@ -22,8 +23,19 @@ object FruitService {
             return all
         }.mapLeft { KaqAppError.DatabaseProblem(it) }
 
-    suspend fun findAll(): KaqAppErrorFruitListEither = findAllWithTimePrint(FruitRepo.findAll, "Coroutines")
+    suspend fun findAll(): Either<KaqAppError, List<Fruit>> = findAllWithTimePrint(FruitRepo.findAll, "Coroutines")
     suspend fun create(fruit: Fruit) = FruitRepo.add(fruit).flatMap { FruitRepo.findByName(fruit.name) }
     suspend fun findByName(name: String): Either<KaqAppError, Fruit> = FruitRepo.findByName(name)
 
+    suspend fun createAndFind(fruit: Fruit, name: String): Either<KaqAppError, String> = either {
+        val newOne = create(fruit).bind()
+        val nameFruit = findByName(name).bind()
+        val fruits = findAll().bind()
+        nameFruit.name
+    }
+
+    suspend fun createAndFindPar(fruit: Fruit, name: String): Either<KaqAppError, String> =
+        parZip({ create(fruit) }, { findByName(name) }, { findAll() }) { _, nameFruit, fruits ->
+            nameFruit.map { it.name }
+        }
 }
