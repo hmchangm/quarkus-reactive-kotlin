@@ -1,6 +1,8 @@
 package tw.idv.brandy.arrow
 
+import arrow.core.NonEmptyList
 import org.jboss.logging.Logger
+import tw.idv.brandy.arrow.util.ConfigError
 import javax.ws.rs.core.Response
 
 sealed class KaqAppError {
@@ -9,6 +11,7 @@ sealed class KaqAppError {
     data class NoThisFruit(val fruitName: String) : KaqAppError()
     data class AddToDBError(val name: String) : KaqAppError()
     class JsonSerializationFail(val e: Throwable) : KaqAppError()
+    class QuarkusConfigError(it: NonEmptyList<ConfigError>) : KaqAppError()
 
     companion object {
         private val LOG: Logger = Logger.getLogger(KaqAppError::class.java)
@@ -26,6 +29,10 @@ sealed class KaqAppError {
             }
             is NoThisFruit -> Response.status(404).entity("FruitId ${kaqError.fruitName} is not exist").build()
             is AddToDBError -> Response.serverError().entity("Fruit ${kaqError.name} add to db failed").build()
+            else -> {
+                Response.serverError().entity("Db Connect Error ")
+                    .build()
+            }
         }
     }
 }

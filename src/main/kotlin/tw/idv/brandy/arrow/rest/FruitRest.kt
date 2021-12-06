@@ -1,9 +1,11 @@
 package tw.idv.brandy.arrow.rest
 
+import com.mongodb.client.MongoClient
 import tw.idv.brandy.arrow.KaqAppError
 import tw.idv.brandy.arrow.model.Fruit
 import tw.idv.brandy.arrow.model.NewFruit
 import tw.idv.brandy.arrow.service.FruitService
+import javax.inject.Inject
 import javax.ws.rs.GET
 import javax.ws.rs.POST
 import javax.ws.rs.Path
@@ -15,6 +17,8 @@ import javax.ws.rs.core.Response
 @Path("/fruits")
 class FruitRest {
 
+    @Inject
+    lateinit var mClient :MongoClient
 
     @GET
     @Produces(MediaType.APPLICATION_JSON)

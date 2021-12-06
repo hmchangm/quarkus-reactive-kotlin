@@ -1,16 +1,25 @@
 package tw.idv.brandy.arrow.util
 
-import arrow.core.Either
-import arrow.core.Validated
-import arrow.core.ValidatedNel
+import arrow.core.*
 import org.eclipse.microprofile.config.ConfigProvider
+import tw.idv.brandy.arrow.KaqAppError
 
 object QuarkusConfig {
 
-    fun read(key: String): ValidatedNel<ConfigError, String> =
+    private val evalParams: Eval<Either<KaqAppError, Triple<String, String, String>>> = Eval.later {
+        fetch<String>("quarkus.package.type").zip(
+            fetch<String>("myConfig.xxx"),
+            fetch<String>("myConfig.xxx")
+        ) { a, b, c -> Triple(a, b, c) }.toEither().mapLeft { KaqAppError.QuarkusConfigError(it) }
+    }
+
+
+    fun getParams() = evalParams.value()
+
+    inline fun <reified T> fetch(key: String): ValidatedNel<ConfigError, T> =
         Validated.fromEither(
             Either.catch {
-                ConfigProvider.getConfig().getValue(key, String::class.java)
+                ConfigProvider.getConfig().getValue(key, T::class.java)
             }.mapLeft { ConfigError.MissingConfig(key) }
         ).toValidatedNel()
 
