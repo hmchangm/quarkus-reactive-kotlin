@@ -9,17 +9,14 @@ import javax.servlet.annotation.WebServlet
 import javax.servlet.http.HttpServlet
 import javax.servlet.http.HttpServletRequest
 import javax.servlet.http.HttpServletResponse
+import javax.ws.rs.core.MediaType
 
 @WebServlet(name = "Hello", value = ["/fruits"])
 class UndertowServlet : HttpServlet() {
 
     override fun doGet(req: HttpServletRequest, res: HttpServletResponse) {
-        runBlocking {
-            FruitRepo.findFruitModels().fold(
-                ifRight = {
-                    Json.encodeToStream(it, res.outputStream)
-                },
-                ifLeft = { err -> KaqAppError.toResponse(err) })
-        }
+        res.outputStream.print("in GET")
+        res.contentType= MediaType.TEXT_PLAIN
+
     }
 }
