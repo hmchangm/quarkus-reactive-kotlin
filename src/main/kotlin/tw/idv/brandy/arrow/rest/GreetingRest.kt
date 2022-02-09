@@ -1,17 +1,8 @@
 package tw.idv.brandy.arrow.rest
 
-import arrow.core.Either
-import kotlinx.serialization.encodeToString
-import kotlinx.serialization.json.Json
-import tw.idv.brandy.arrow.KaqAppError
-import tw.idv.brandy.arrow.model.Greeting
-import tw.idv.brandy.arrow.model.Greetv
-import tw.idv.brandy.arrow.model.Message
-
 import javax.ws.rs.*
 import javax.ws.rs.core.MediaType
 import javax.ws.rs.core.Response
-
 
 
 @Target(AnnotationTarget.FUNCTION, AnnotationTarget.PROPERTY_GETTER, AnnotationTarget.PROPERTY_SETTER)
@@ -24,45 +15,28 @@ annotation class PROPFIND
 @HttpMethod("LOCK")
 annotation class LOCK
 
-@Path("/greeting")
+@Path("/storage")
 class GreetingRest {
 
+    private val classLoader: ClassLoader = javaClass.classLoader
+
     @GET
-    @Path("/")
-    @Produces(MediaType.APPLICATION_JSON)
-    suspend fun hello(): Greeting = Greeting("hello")
+    @Path("{fileName}")
+    @Produces(MediaType.APPLICATION_OCTET_STREAM)
+    suspend fun downloadFile(fileName: String) = Response.ok(classLoader.getResourceAsStream(fileName)).build()
 
-    @LOCK
-    @Path("/")
-    @Produces(MediaType.APPLICATION_JSON)
-    suspend fun helloLock(): Greeting = Greeting("hello LOCK")
-
-    @PROPFIND
-    @Path("/")
-    @Produces(MediaType.APPLICATION_JSON)
-    suspend fun helloProp(): Greeting = Greeting("hello PROPFIND")
+//    @HEAD
+//    @Path("{fileName}")
+//    suspend fun headCall() = Response.ok().build()
 
 
     @OPTIONS
-    @Path("/")
-    @Produces(MediaType.APPLICATION_JSON)
-    suspend fun helloOptions(): Greeting = Greeting("hello OPTIONS")
-
-    @GET
-    @Path("/value")
-    @Produces(MediaType.APPLICATION_JSON)
-    suspend fun greetValue(): Greetv = Greetv(Message("hello"))
-
-
-    @POST
-    suspend fun greetInOut(json: String): Response {
-        return Either.catch {
-            json.let { Json.decodeFromString(Greetv.serializer(), it) }
-        }.mapLeft { KaqAppError.DatabaseProblem(it) }
-            .fold(ifRight = {
-                Response.ok(Json.encodeToString(it), MediaType.APPLICATION_JSON).build()
-            },
-                ifLeft = { err -> KaqAppError.toResponse(err) })
-    }
+    @Path("{fileName}")
+    suspend fun optionCall() = Response.ok().apply {
+        status(200)
+        header("DAV", "1, 2")
+        header("MS-Author-Via", "DAV")
+        header("Allow", "OPTIONS,UNLOCK,LOCK,HEAD,PUT,GET")
+    }.build()
 
 }
