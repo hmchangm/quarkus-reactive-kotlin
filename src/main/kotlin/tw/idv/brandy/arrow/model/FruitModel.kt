@@ -1,7 +1,5 @@
 package tw.idv.brandy.arrow.model
 
-
-import com.fasterxml.jackson.annotation.JsonProperty
 import io.quarkus.runtime.annotations.RegisterForReflection
 import kotlinx.serialization.Serializable
 
@@ -18,10 +16,7 @@ value class FruitDesc(private val v: String)
 @Serializable
 @RegisterForReflection
 data class FruitModel (
-    @JsonProperty
     val id: FruitId,
-    @JsonProperty
     val name: FruitName,
-    @JsonProperty
     val desc: FruitDesc
 )
