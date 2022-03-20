@@ -1,10 +1,14 @@
 package tw.idv.brandy.arrow.rest
 
+import arrow.core.getOrElse
 import io.smallrye.mutiny.coroutines.awaitSuspending
+import tw.idv.brandy.arrow.service.RestClientService
 import tw.idv.brandy.arrow.util.DatabaseInit.Companion.redisClient
 import java.util.*
 import javax.ws.rs.GET
 import javax.ws.rs.Path
+import javax.ws.rs.Produces
+import javax.ws.rs.core.MediaType
 import javax.ws.rs.core.Response
 
 
@@ -28,6 +32,11 @@ class RedisRest {
             "key1"
         ).awaitSuspending()
     }.let { Response.ok(it.toString()).build() }
+
+    @GET
+    @Path("getUsers")
+    @Produces(MediaType.APPLICATION_JSON)
+    suspend fun getUsers() = RestClientService.getUserWithCache("ABC")
 
 
 }
