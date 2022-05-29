@@ -5,17 +5,7 @@ import javax.ws.rs.core.MediaType
 import javax.ws.rs.core.Response
 
 
-@Target(AnnotationTarget.FUNCTION, AnnotationTarget.PROPERTY_GETTER, AnnotationTarget.PROPERTY_SETTER)
-@Retention
-@HttpMethod("PROPFIND")
-annotation class PROPFIND
-
-@Target(AnnotationTarget.FUNCTION, AnnotationTarget.PROPERTY_GETTER, AnnotationTarget.PROPERTY_SETTER)
-@Retention
-@HttpMethod("LOCK")
-annotation class LOCK
-
-@Path("/storage")
+@Path("/greet")
 class GreetingRest {
 
     private val classLoader: ClassLoader = javaClass.classLoader

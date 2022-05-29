@@ -26,10 +26,9 @@ class FruitResourceTest {
         } When {
             post("/fruits")
         } Then {
-            statusCode(201)
+            statusCode(200)
             body(
-                containsString(""""id":"""),
-                containsString(""""name":"Kiwi"""")
+                containsString("""Hello Test""")
             )
         }
 
