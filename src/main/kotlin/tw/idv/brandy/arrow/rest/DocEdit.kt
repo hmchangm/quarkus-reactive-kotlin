@@ -1,5 +1,9 @@
 package tw.idv.brandy.arrow.rest
 
+import io.minio.GetObjectArgs
+import io.minio.MinioClient
+import io.minio.PutObjectArgs
+import io.minio.UploadObjectArgs
 import io.vertx.core.http.HttpServerRequest
 import kotlinx.coroutines.*
 import org.jboss.resteasy.reactive.multipart.FileUpload
@@ -28,15 +32,14 @@ annotation class LOCK
 annotation class UNLOCK
 
 @Path("/edit")
-class DocEdit {
+class DocEdit(val minioClient: MinioClient) {
 
     private val classLoader: ClassLoader = javaClass.classLoader
-
 
     @GET
     @Path("/abcd/{fileName}")
     @Produces(MediaType.APPLICATION_OCTET_STREAM)
-    suspend fun downloadFile(fileName: String) = Response.ok(classLoader.getResourceAsStream(fileName)).build()
+    suspend fun downloadFile(fileName: String) = Response.ok(readInputStream(fileName)).build()
 
     @OPTIONS
     @Path("/abcd/")
@@ -58,24 +61,18 @@ class DocEdit {
         header("MS-Author-Via", "DAV")
         header("Allow", "OPTIONS,UNLOCK,LOCK,HEAD,PUT,GET")
     }.build()
-
+    val token = UUID.randomUUID().toString()
     @LOCK
     @Path("/abcd/{fileName}")
     suspend fun lockCall(body: String, @PathParam("fileName") fileName: String): Response {
-        val token = UUID.randomUUID().toString()
+
         println(token)
-        return """<?xml version="1.0" encoding="UTF-8"?><d:prop xmlns:d="DAV:">            
-            <d:lockdiscovery><d:activelock><d:locktype><d:write/></d:locktype><d:lockscope><d:exclusive/>            
-            </d:lockscope><d:depth>Infinity</d:depth><d:timeout>Second-604800</d:timeout><d:locktoken>            
-            <d:href>$token</d:href></d:locktoken><d:lockroot>            
-            <d:href>/edit/abcd/$fileName</d:href></d:lockroot></d:activelock></d:lockdiscovery></d:prop>""".let {
-            Response.ok(it).apply {
+        return Response.ok().apply {
                 println("lock call : $body")
                 header("Lock-Token", token)
                 header("Content-Type", "text/xml")
                 status(200)
             }.build()
-        }
     }
 
     @UNLOCK
@@ -88,21 +85,28 @@ class DocEdit {
 
     @PUT
     @Path("/abcd/{fileName}")
-    suspend fun save(inputStream: InputStream): Response {
-        println(inputStream.readData())
+    suspend fun save(fileName: String, inputStream: InputStream): Response {
+        writeFile(fileName,inputStream)
         return Response.ok().apply {
             status(200)
         }.build()
     }
 
+    suspend fun readInputStream(fileName: String) =
+        minioClient.getObject(
+            GetObjectArgs.builder()
+                .bucket("buck")
+                .`object`(fileName)
+                .build()
+        )!!
 
-    suspend fun InputStream.readData(): ByteArray = withContext(Dispatchers.IO) {
-        while (available() == 0) {
-            delay(10)
-        }
-        val count = available()
-        val buffer = ByteArray(count)
-        read(buffer, 0, count)
-        buffer
+    suspend fun writeFile(filename: String, inputStream: InputStream) = withContext(Dispatchers.IO) {
+        minioClient.putObject(
+            PutObjectArgs.builder()
+                .bucket("buck").stream(inputStream,-1,1024*1024*1024)
+                .`object`(filename)
+                .build()
+        )
     }
+
 }

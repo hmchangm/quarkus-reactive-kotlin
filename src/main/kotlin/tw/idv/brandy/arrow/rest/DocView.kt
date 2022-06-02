@@ -41,6 +41,6 @@ class DocView {
     @Path("/abcd/{fileName}")
     suspend fun lockCall(body:String) = Response.ok().apply {
         println("lock call : $body")
-        status(403)
+        status(200)
     }.build()
 }
