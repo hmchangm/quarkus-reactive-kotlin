@@ -11,19 +11,21 @@ import org.bson.Document
 import tw.idv.brandy.arrow.KaqAppError
 import tw.idv.brandy.arrow.model.*
 import tw.idv.brandy.arrow.util.DatabaseInit.Companion.mongoClient
+import tw.idv.brandy.arrow.util.asyncFind
+import tw.idv.brandy.arrow.util.asyncInsertOne
 
 
 object FruitRepo {
 
     val findAll: suspend () -> Either<KaqAppError, List<Fruit>> = {
         Either.catch {
-            getCollection().find().map(docToFruit).toList()
+            getCollection().asyncFind().map(docToFruit).toList()
         }.mapLeft { KaqAppError.DatabaseProblem(it) }
     }
 
     val findFruitModels: suspend () -> Either<KaqAppError, List<FruitModel>> = {
         Either.catch {
-            getCollection().find().map(docToValueFruit).toList()
+            getCollection().asyncFind().map(docToValueFruit).toList()
         }.mapLeft { KaqAppError.DatabaseProblem(it) }
     }
 
@@ -33,7 +35,7 @@ object FruitRepo {
                 append("name", fruit.name)
                 append("desc", fruit.desc)
                 append("id", fruit.id)
-            }.let { getCollection().insertOne(it) }
+            }.let { getCollection().asyncInsertOne(it) }
             Unit
         }.mapLeft { KaqAppError.DatabaseProblem(it) }
     }
@@ -46,7 +48,7 @@ object FruitRepo {
         { maybeFruit, name -> maybeFruit.toEither { KaqAppError.NoThisFruit(name) } }
 
     suspend fun findByName(name: String): Either<KaqAppError, Fruit> = Either.catch {
-        BsonDocument().append("name", BsonString(name)).let { getCollection().find(it) }
+        BsonDocument().append("name", BsonString(name)).let { getCollection().asyncFind(it) }
             .firstNotNullOfOrNull(docToFruit).toOption()
     }.mapLeft { KaqAppError.DatabaseProblem(it) }.flatMap { fruitOptionToEither(it, name) }
 
