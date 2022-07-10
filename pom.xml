@@ -8,7 +8,7 @@
     <version>0.5.0-SNAPSHOT</version>
     <properties>
         <compiler-plugin.version>3.8.1</compiler-plugin.version>
-        <kotlin.version>1.5.31</kotlin.version>
+        <kotlin.version>1.6.21</kotlin.version>
         <maven.compiler.parameters>true</maven.compiler.parameters>
         <maven.compiler.source>11</maven.compiler.source>
         <maven.compiler.target>11</maven.compiler.target>
@@ -16,9 +16,9 @@
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
         <quarkus.platform.artifact-id>quarkus-bom</quarkus.platform.artifact-id>
         <quarkus.platform.group-id>io.quarkus.platform</quarkus.platform.group-id>
-        <quarkus.platform.version>2.7.3.Final</quarkus.platform.version>
+        <quarkus.platform.version>2.10.2.Final</quarkus.platform.version>
         <surefire-plugin.version>3.0.0-M5</surefire-plugin.version>
-        <arrow.version>1.0.1</arrow.version>
+        <arrow.version>1.1.0</arrow.version>
     </properties>
     <dependencyManagement>
         <dependencies>
@@ -33,8 +33,8 @@
     </dependencyManagement>
     <dependencies>
         <dependency>
-            <groupId>io.quarkus</groupId>
-            <artifactId>quarkus-redis-client</artifactId>
+            <groupId>io.vertx</groupId>
+            <artifactId>vertx-lang-kotlin-coroutines</artifactId>
         </dependency>
         <dependency>
             <groupId>io.quarkus</groupId>
@@ -65,7 +65,7 @@
         <dependency>
             <groupId>io.arrow-kt</groupId>
             <artifactId>arrow-fx-coroutines-jvm</artifactId>
-            <version>1.0.1</version>
+            <version>1.1.2</version>
         </dependency>
         <dependency>
             <groupId>io.quarkus</groupId>
@@ -74,12 +74,12 @@
         <dependency>
             <groupId>io.quarkiverse.minio</groupId>
             <artifactId>quarkus-minio</artifactId>
-            <version>2.3.0</version>
+            <version>2.9.1</version>
         </dependency>
         <dependency>
             <groupId>org.jetbrains.kotlinx</groupId>
             <artifactId>kotlinx-serialization-json-jvm</artifactId>
-            <version>1.3.2</version>
+            <version>1.3.3</version>
         </dependency>
         <dependency>
             <groupId>io.quarkus</groupId>

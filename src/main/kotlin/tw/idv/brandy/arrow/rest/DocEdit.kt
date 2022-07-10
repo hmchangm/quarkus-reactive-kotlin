@@ -3,15 +3,16 @@ package tw.idv.brandy.arrow.rest
 import io.minio.GetObjectArgs
 import io.minio.MinioClient
 import io.minio.PutObjectArgs
-import io.minio.UploadObjectArgs
-import io.vertx.core.http.HttpServerRequest
+import io.vertx.core.buffer.Buffer
+import io.vertx.ext.web.RoutingContext
+import io.vertx.kotlin.coroutines.await
 import kotlinx.coroutines.*
-import org.jboss.resteasy.reactive.multipart.FileUpload
-import java.io.File
+import org.jboss.resteasy.reactive.RestResponse
+import java.io.FilterInputStream
 import java.io.InputStream
 import java.util.*
 import javax.ws.rs.*
-import javax.ws.rs.core.Context
+import javax.ws.rs.core.HttpHeaders
 import javax.ws.rs.core.MediaType
 import javax.ws.rs.core.Response
 
@@ -41,6 +42,15 @@ class DocEdit(val minioClient: MinioClient) {
     @Produces(MediaType.APPLICATION_OCTET_STREAM)
     suspend fun downloadFile(fileName: String) = Response.ok(readInputStream(fileName)).build()
 
+    @GET
+    @Path("/getFile/{fileName}")
+    //@Produces(MediaType.APPLICATION_OCTET_STREAM)
+    suspend fun getFile(fileName: String, rc: RoutingContext): ByteArray {
+        //return buffer
+        streamInputStream(rc, fileName, readInputStream(fileName))
+        return byteArrayOf()
+    }
+
     @OPTIONS
     @Path("/abcd/")
     suspend fun optionParentCall() = Response.ok().apply {
@@ -61,52 +71,89 @@ class DocEdit(val minioClient: MinioClient) {
         header("MS-Author-Via", "DAV")
         header("Allow", "OPTIONS,UNLOCK,LOCK,HEAD,PUT,GET")
     }.build()
+
     val token = UUID.randomUUID().toString()
+
     @LOCK
     @Path("/abcd/{fileName}")
     suspend fun lockCall(body: String, @PathParam("fileName") fileName: String): Response {
 
         println(token)
         return Response.ok().apply {
-                println("lock call : $body")
-                header("Lock-Token", token)
-                header("Content-Type", "text/xml")
-                status(200)
-            }.build()
-    }
-
-    @UNLOCK
-    @Path("/abcd/{fileName}")
-    suspend fun unlock(@HeaderParam("Lock-Token") token: String, body: String) = Response.ok().apply {
-        println("unlock call : $body")
-        println("unlock token : $token")
-        status(200)
-    }.build()
-
-    @PUT
-    @Path("/abcd/{fileName}")
-    suspend fun save(fileName: String, inputStream: InputStream): Response {
-        writeFile(fileName,inputStream)
-        return Response.ok().apply {
+            println("lock call : $body")
+            header("Lock-Token", token)
+            header("Content-Type", "text/xml")
             status(200)
         }.build()
     }
 
+    @UNLOCK
+    @Path("/abcd/{fileName}")
+    suspend fun unlock(@HeaderParam("Lock-Token") token: String, body: String) =
+        RestResponse.ResponseBuilder.ok("").apply {
+            println("unlock call : $body")
+            println("unlock token : $token")
+        }.build()
+
+    @PUT
+    @Path("/abcd/{fileName}")
+    suspend fun save(fileName: String, inputStream: InputStream) =
+        writeFile(fileName, inputStream).let { RestResponse.ResponseBuilder.ok("").build() }
+
+
     suspend fun readInputStream(fileName: String) =
-        minioClient.getObject(
-            GetObjectArgs.builder()
-                .bucket("buck")
-                .`object`(fileName)
-                .build()
-        )!!
+        withContext(Dispatchers.IO) {
+            minioClient.getObject(
+                GetObjectArgs.builder()
+                    .bucket("buck")
+                    .`object`(fileName)
+                    .build()
+            )!!
+        }
 
     suspend fun writeFile(filename: String, inputStream: InputStream) = withContext(Dispatchers.IO) {
         minioClient.putObject(
             PutObjectArgs.builder()
-                .bucket("buck").stream(inputStream,-1,1024*1024*1024)
+                .bucket("buck").stream(inputStream, -1, 1024 * 1024 * 1024)
                 .`object`(filename)
                 .build()
         )
     }
 
+    suspend fun InputStream.bioRead(b: ByteArray) = withContext(Dispatchers.IO) {
+        read(b)
+    }
+
+    suspend fun streamInputStream(
+        rc: RoutingContext,
+        fileName: String,
+        inputStream: InputStream
+    ): ByteArray {
+        val resp = rc.response().apply {
+            putHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_OCTET_STREAM)
+            putHeader(
+                "Content-Disposition",
+                "attachment; filename=\"$fileName\""
+            )
+            isChunked = true
+        }
+
+        val buffer = ByteArray(8192)
+        var c: Int
+        while (inputStream.bioRead(buffer).also { c = it } != -1) {
+            buffer.let {
+                when (c == 8192) {
+                    true -> it
+                    false -> it.copyOfRange(0, c)
+                }
+            }.let { Buffer.buffer(it) }.let { resp.write(it).await() }
+        }
+        withContext(Dispatchers.IO) {
+            inputStream.close()
+        }
+        // let resteasy jackson end the response properly
+        return byteArrayOf()
+    }
+
 }
+
