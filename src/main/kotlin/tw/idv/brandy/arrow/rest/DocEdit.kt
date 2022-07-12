@@ -1,5 +1,7 @@
 package tw.idv.brandy.arrow.rest
 
+import com.github.michaelbull.retry.policy.limitAttempts
+import com.github.michaelbull.retry.retry
 import io.minio.GetObjectArgs
 import io.minio.MinioClient
 import io.minio.PutObjectArgs
@@ -8,6 +10,7 @@ import io.vertx.ext.web.RoutingContext
 import io.vertx.kotlin.coroutines.await
 import kotlinx.coroutines.*
 import org.jboss.resteasy.reactive.RestResponse
+import java.io.File
 import java.io.FilterInputStream
 import java.io.InputStream
 import java.util.*
@@ -100,6 +103,11 @@ class DocEdit(val minioClient: MinioClient) {
     suspend fun save(fileName: String, inputStream: InputStream) =
         writeFile(fileName, inputStream).let { RestResponse.ResponseBuilder.ok("").build() }
 
+    @POST
+    @Path("/abcd/{fileName}")
+    suspend fun saveForm(fileName: String, file: File) =
+       println(file.absoluteFile).let{ writeFile(fileName, file.inputStream())}.let { RestResponse.ResponseBuilder.ok("").build() }
+
 
     suspend fun readInputStream(fileName: String) =
         withContext(Dispatchers.IO) {
@@ -111,14 +119,19 @@ class DocEdit(val minioClient: MinioClient) {
             )!!
         }
 
-    suspend fun writeFile(filename: String, inputStream: InputStream) = withContext(Dispatchers.IO) {
-        minioClient.putObject(
-            PutObjectArgs.builder()
-                .bucket("buck").stream(inputStream, -1, 1024 * 1024 * 1024)
-                .`object`(filename)
-                .build()
-        )
+
+
+    suspend fun writeFile(filename: String, inputStream: InputStream) = retry(limitAttempts(3)) {
+        withContext(Dispatchers.IO) {
+            minioClient.putObject(
+                PutObjectArgs.builder()
+                    .bucket("buck").stream(inputStream, -1, 1024 * 1024 * 1024)
+                    .`object`(filename)
+                    .build()
+            )
+        }
     }
+
 
     suspend fun InputStream.bioRead(b: ByteArray) = withContext(Dispatchers.IO) {
         read(b)
