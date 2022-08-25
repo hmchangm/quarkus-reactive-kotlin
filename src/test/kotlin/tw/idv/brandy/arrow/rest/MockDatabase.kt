@@ -15,7 +15,7 @@ class MockDatabase : QuarkusTestResourceLifecycleManager {
     override fun start(): MutableMap<String, String> {
         println("STARTING MariaDB")
         db.start()
-        return mutableMapOf(Pair("quarkus.datasource.reactive.url", "mysql://:${db.firstMappedPort}/quarkus_test"))
+        return mutableMapOf(Pair("quarkus.datasource.jdbc.url", "jdbc:mariadb://localhost:${db.firstMappedPort}/quarkus_test"))
     }
 
     override fun stop() {
