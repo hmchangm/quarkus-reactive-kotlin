@@ -1,7 +1,7 @@
 package tw.idv.brandy.arrow.rest
 
 
-import arrow.core.identity
+import com.fasterxml.jackson.databind.ObjectMapper
 import org.jboss.resteasy.reactive.RestResponse
 import tw.idv.brandy.arrow.KaqAppError
 import tw.idv.brandy.arrow.model.Fruit
@@ -12,10 +12,9 @@ import javax.ws.rs.POST
 import javax.ws.rs.Path
 import javax.ws.rs.Produces
 import javax.ws.rs.core.MediaType
-import javax.ws.rs.core.Response
 
 @Path("/")
-class FruitResource {
+class FruitResource(val json: ObjectMapper) {
 
     @GET
     @Path("/greeting")
@@ -25,26 +24,29 @@ class FruitResource {
     @GET
     @Path("/fruits")
     @Produces(MediaType.APPLICATION_JSON)
-    suspend fun getAllFruits() =
-        FruitRepo.findAll().fold(
-            ifRight = ::identity,
+    suspend fun getAllFruits(): RestResponse<String> =
+        FruitRepo.findAll().map { json.writeValueAsString(it) }.fold(
+            ifRight = { RestResponse.ok(it) },
             ifLeft = KaqAppError::toResponse
         )
 
     @GET
     @Path("/fruits/{id}")
     @Produces(MediaType.APPLICATION_JSON)
-    suspend fun getSingle(id: Long) =
-        FruitRepo.findById(id).fold(
-            ifRight = ::identity,
+    suspend fun getSingle(id: Long): RestResponse<String> =
+        FruitRepo.findById(id).map { json.writeValueAsString(it) }.fold(
+            ifRight = { RestResponse.ok(it) },
             ifLeft = KaqAppError::toResponse
         )
 
     @POST
     @Path("/fruits")
-    suspend fun create(fruit: Fruit) =
-        FruitRepo.create(fruit).fold(
-            ifRight = { RestResponse.ResponseBuilder.create<Fruit>(201, "").entity(it).build() },
+    suspend fun create(fruit: Fruit): RestResponse<String> =
+        FruitRepo.create(fruit).map { json.writeValueAsString(it) }.fold(
+            ifRight = {
+                RestResponse.ResponseBuilder.create<String>(201, "")
+                    .entity(it).build()
+            },
             ifLeft = { err -> KaqAppError.toResponse(err) }
         )
 
