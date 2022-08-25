@@ -1,6 +1,8 @@
 package tw.idv.brandy.arrow.rest
 
 
+import arrow.core.identity
+import org.jboss.resteasy.reactive.RestResponse
 import tw.idv.brandy.arrow.KaqAppError
 import tw.idv.brandy.arrow.model.Fruit
 import tw.idv.brandy.arrow.model.Greeting
@@ -23,26 +25,26 @@ class FruitResource {
     @GET
     @Path("/fruits")
     @Produces(MediaType.APPLICATION_JSON)
-    suspend fun getAllFruits(): Response =
+    suspend fun getAllFruits() =
         FruitRepo.findAll().fold(
-            ifRight = { fruits -> Response.ok(fruits).build() },
-            ifLeft = { err -> KaqAppError.toResponse(err) }
+            ifRight = ::identity,
+            ifLeft = KaqAppError::toResponse
         )
 
     @GET
     @Path("/fruits/{id}")
     @Produces(MediaType.APPLICATION_JSON)
-    suspend fun getSingle(id:Long): Response =
+    suspend fun getSingle(id: Long) =
         FruitRepo.findById(id).fold(
-            ifRight = { fruit -> Response.ok(fruit).build() },
-            ifLeft = { err -> KaqAppError.toResponse(err) }
+            ifRight = ::identity,
+            ifLeft = KaqAppError::toResponse
         )
 
     @POST
     @Path("/fruits")
-    suspend fun create(fruit:Fruit): Response =
+    suspend fun create(fruit: Fruit) =
         FruitRepo.create(fruit).fold(
-            ifRight = {  Response.ok(it).status(201).build()},
+            ifRight = { RestResponse.ResponseBuilder.create<Fruit>(201, "").entity(it).build() },
             ifLeft = { err -> KaqAppError.toResponse(err) }
         )
 
